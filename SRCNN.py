@@ -21,14 +21,27 @@ def main():
 
     if training:
 
+        saver = tf.train.Saver(max_to_keep=5)
+
+        sess = tf.Session()
+
+        model = build_model(image_size, ground_image_size, num_channels, f1=f1,n1=n1,n2=n2,f3=f3)
+        # MSE loss function
+        loss = tf.reduce_mean(tf.square(model['ground_images'] - model['cnn']))
+
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
+
+        tf.initialize_all_variables().run()
+        
+        for epoch in range(num_epoch):
+            print("EPOCH:", epoch)
+            num_batches = len(images) // batch_size
+            for idx in range(num_batches):
 
         # Code block for getting data: assume 4-D tensor, tf.uint8, images of the same size, ground_images of the same size
-        images, ground_images = get_data() # Will implement after Yufei finishes data processing
-
-        
-        model = build_model(image_size, ground_image_size, num_channels, f1=f1,n1=n1,n2=n2,f3=f3)
-        with tf.Session() as sess:
-            train(images, ground_images, model, sess, num_epoch=num_epoch, batch_size=batch_size)
+                chunk_id = [idx*batch_size : (idx+1)*batch_size]
+                batch_images, batch_ground_images = get_data(chunk_id) # Will implement after Yufei finishes data processing
+                train(batch_images, batch_ground_images, model, optimizer, epoch, saver, sess)
     else:
         pass
 
