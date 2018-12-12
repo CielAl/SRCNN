@@ -12,8 +12,13 @@ import sklearn.feature_extraction.image
 from sklearn.feature_extraction.image import extract_patches
 import tables
 
+'''	Note: define it with a main and run in command line makes it difficult to debug and somehow redundant to parse the arguments.
+	Since we are running the demo in a pynotebook as requested by Andrew, we can simply make this file a module.
+	A mockup notebook on how to use database is provided in HDF5_example.ipynb. Simply instantiate the database and 
+	import "run" into the notebook, passing database as the input arg.
 
-def main():
+'''
+def run(database):
     if len(sys.argv) != 11:
         raise Exception("Inappropriate number of arguments. Require 9.")
     training = int(sys.argv[1])
@@ -52,10 +57,7 @@ def main():
 
         # Code block for getting data: assume 4-D tensor, tf.uint8, images of the same size, ground_images of the same size
                 chunk_id = [idx*batch_size : (idx+1)*batch_size]
-                batch_images, batch_ground_images = get_data(chunk_id) # Will implement after Yufei finishes data processing
+                batch_images, batch_ground_images = database['train',chunk_id] # Will implement after Yufei finishes data processing
                 train(batch_images, batch_ground_images, model, optimizer, epoch, saver, sess)
     else:
         pass
-
-if __name__ == '__main__':
-    main()
