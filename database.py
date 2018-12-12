@@ -23,7 +23,7 @@ from tqdm import tqdm
 from types import SimpleNamespace
 
 
-class dataLoader():
+class database():
 
 
 	''' The constructor of the class. Some of the logic are inspired from the blog and its corresponding code here:
