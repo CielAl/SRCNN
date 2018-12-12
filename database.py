@@ -80,44 +80,45 @@ class database():
 
 	def generate_pair(self,file):
 		img = cv2.imread(file,cv2.COLOR_BGR2RGB)
-		img_down = cv2.resize(img,(0,0),fx=resize,fy=resize, interpolation=self.interp)
+		img_down = cv2.resize(img,(0,0),fx=self.resize,fy=self.resize, interpolation=self.interp)
 		img_down = cv2.resize(img_down,img.shape[0:2],interpolation=self.interp)
 		return img,img_down
 
-	def generate_patch(image):
+	def generate_patch(self,image):
 		patches_label= extract_patches(image,self.patch_shape,self.stride_size)
 		patches_label = patches_label.reshape((-1,)+self.patch_shape)
-		return
+		return patches_label
 
 	# Tutorial from  https://github.com/jvanvugt/pytorch-unet
 	def execute(self):
 		h5arrays = {}
-		debug = {}
+		#debug = {}
 		filters=tables.Filters(complevel= 5)
 		types = ['img','label']
 		#for each phase create a pytable
+		pytable = {}
 		for phase in self.phases.keys():
 			#export dir  -- use normal formatted string so it can be run on python3.6
 			pytable_dir = os.path.join(self.export_dir)
 			pytable_fullpath = os.path.join(pytable_dir,"%s_%s%s" %(self.database_name,phase,'.pytable'))
 			if not os.path.exists(pytable_dir):
 				os.makedirs(pytable_dir)
-			pytable = tables.open_file(pytable_fullpath, mode='w')
-			debug[phase] = pytable
-
+			pytable[phase] = tables.open_file(pytable_fullpath, mode='w')
+			#debug[phase] = pytable
+			h5arrays['filename'] = pytable[phase].create_earray(pytable[phase].root, 'filename', self.filenameAtom, (0,))
 
 			for type in types:
-				h5arrays[type]= pytable.create_earray(pytable.root, type, self.dtype,
+				h5arrays[type]= pytable[phase].create_earray(pytable[phase].root, type, self.dtype,
 													  shape=np.append([0],self.patch_shape),
 													  chunkshape=np.append([1],self.patch_shape),
 													  filters=filters)
 
 			#
 			#cv2.COLOR_BGR2RGB
-			for file_id in tqdm(phase):
+			for file_id in tqdm(self.phases[phase]):
 				#img as label,
 				file = self.filelist[file_id]
-				h5arrays['filename'] = pytable.create_earray(pytable.root, 'filename', self.filenameAtom, (0,))
+				
 				img_truth,img_down = self.generate_pair(file)
 
 				patches = {}
@@ -126,6 +127,6 @@ class database():
 				for type in types:
 					h5arrays[type].append(patches[type])
 
-			h5arrays["filename"].append([file for x in range(patches[0].shape[0])])
-			for k,v in h5arrays.items:
+			h5arrays["filename"].append([file for x in range(patches[types[0]].shape[0])])
+			for k,v in pytable.items():
 				v.close()
