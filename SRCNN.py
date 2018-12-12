@@ -5,6 +5,14 @@ import os
 from training import train
 from build_model import build_model
 
+
+from database import database
+from matplotlib import pyplot as plt
+import sklearn.feature_extraction.image
+from sklearn.feature_extraction.image import extract_patches
+import tables
+
+
 def main():
     if len(sys.argv) != 11:
         raise Exception("Inappropriate number of arguments. Require 9.")
@@ -19,6 +27,10 @@ def main():
     num_epoch = int(sys.argv[9])
     batch_size = int(sys.argv[10])
 
+	''' 
+		Lets'define the inputs here
+	'''
+	
     if training:
 
         saver = tf.train.Saver(max_to_keep=5)

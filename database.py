@@ -1,6 +1,7 @@
 # THIS SCRIPT HANDLES DATA PROCESSING
 ''' Requirements: H5 and Table
 	keyname: img, label
+	
 '''
 import tables
 import glob
@@ -23,7 +24,7 @@ from tqdm import tqdm
 from types import SimpleNamespace
 
 
-class database():
+class database(object):
 
 
 	''' The constructor of the class. Some of the logic are inspired from the blog and its corresponding code here:
@@ -67,6 +68,7 @@ class database():
 		self.filelist = self.get_filelist()
 		#for now just take 1 set of train-val shuffle. Leave the n_splits here for future use.
 		self.phases = self.init_split()
+		self.types = ['img','label']
 
 	def get_filelist(self):
 		file_pattern = os.path.join(self.filedir,self.pattern)
@@ -78,29 +80,37 @@ class database():
 		phases['train'],phases['val'] = next(iter(model_selection.ShuffleSplit(n_splits=10,test_size=self.test_ratio).split(self.filelist)))
 		return phases
 
-	def generate_pair(self,file):
+	def img_label_pair(self,file):
 		img = cv2.imread(file,cv2.COLOR_BGR2RGB)
 		img_down = cv2.resize(img,(0,0),fx=self.resize,fy=self.resize, interpolation=self.interp)
-		img_down = cv2.resize(img_down,img.shape[0:2],interpolation=self.interp)
+		img_down = cv2.resize(img_down,(0,0),fx=1/self.resize,fy=1/self.resize,interpolation=self.interp)
 		return img,img_down
 
 	def generate_patch(self,image):
 		patches_label= extract_patches(image,self.patch_shape,self.stride_size)
 		patches_label = patches_label.reshape((-1,)+self.patch_shape)
 		return patches_label
-
+	
+	def generate_tablename(self,phase):
+		pytable_dir = os.path.join(self.export_dir)
+		pytable_fullpath = os.path.join(pytable_dir,"%s_%s%s" %(self.database_name,phase,'.pytable'))
+		return pytable_fullpath,pytable_dir
+		
 	# Tutorial from  https://github.com/jvanvugt/pytorch-unet
-	def execute(self):
+	def write_data(self):
 		h5arrays = {}
 		#debug = {}
 		filters=tables.Filters(complevel= 5)
-		types = ['img','label']
+		types = self.types
 		#for each phase create a pytable
+		self.tablename = {}
 		pytable = {}
 		for phase in self.phases.keys():
 			#export dir  -- use normal formatted string so it can be run on python3.6
-			pytable_dir = os.path.join(self.export_dir)
-			pytable_fullpath = os.path.join(pytable_dir,"%s_%s%s" %(self.database_name,phase,'.pytable'))
+			#pytable_dir = os.path.join(self.export_dir)
+			#pytable_fullpath = os.path.join(pytable_dir,"%s_%s%s" %(self.database_name,phase,'.pytable'))
+			#self.tablename[phase] = pytable_fullpath
+			pytable_fullpath,pytable_dir = self.generate_tablename(phase)
 			if not os.path.exists(pytable_dir):
 				os.makedirs(pytable_dir)
 			pytable[phase] = tables.open_file(pytable_fullpath, mode='w')
@@ -119,14 +129,29 @@ class database():
 				#img as label,
 				file = self.filelist[file_id]
 				
-				img_truth,img_down = self.generate_pair(file)
+				img_truth,img_down = self.img_label_pair(file)
 
 				patches = {}
-				patches[types[0]] = self.generate_patch(img_truth)
-				patches[types[1]] = self.generate_patch(img_down)
+				patches[types[0]] = self.generate_patch(img_down)
+				patches[types[1]] = self.generate_patch(img_truth)
 				for type in types:
 					h5arrays[type].append(patches[type])
 
 			h5arrays["filename"].append([file for x in range(patches[types[0]].shape[0])])
 			for k,v in pytable.items():
 				v.close()
+	
+	'''
+		Slice the chunk of patches out of the database.
+		Precondition: Existence of pytable file. Does not require to call "write_data" as long as pytables exist
+		Args:
+			phase_index_tuple: ('train/val',index)
+		Returns:
+			images, labels(ground truth)
+	'''
+	def __getitem__(self, phase_index_tuple):
+		phase,index = phase_index_tuple
+		with tables.open_file(self.generate_tablename(phase)[0],'r') as pytable:
+			image = pytable.root.img[index,]
+			label = pytable.root.label[index,]
+		return image,label
