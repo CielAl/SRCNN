@@ -50,16 +50,17 @@ def run(database, option='train', learning_rate=1, num_epoch=10, batch_size=1):
 
 		tf.initialize_all_variables().run(session=sess)
 
+		step = 0
+
 		for epoch in range(num_epoch):
 			print("EPOCH:", epoch)
-			print(database.size('train'))
 			num_batches = database.size('train') // batch_size - 2
-			print(database.size('train') // batch_size)
 			for idx in range(num_batches):
 
         # Code block for getting data: assume 4-D tensor, tf.uint8, images of the same size, ground_images of the same size
 				#chunk_id = (idx*batch_size,(idx+1)*batch_size)
+				step += 1
 				batch_images, batch_ground_images = database['train',idx*batch_size:(idx+1)*batch_size] # Will implement after Yufei finishes data processing
-				train(batch_images, batch_ground_images, model, optimizer, loss, epoch, sess)
+				train(batch_images, batch_ground_images, model, optimizer, loss, step, sess)
 	else:
 		pass
