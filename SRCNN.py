@@ -36,8 +36,9 @@ def run(database, option='train', learning_rate=1, num_epoch=10, batch_size=1):
 		Lets'define the inputs here
 	'''
 	print("Preparing data...")
-	database.write_data()
-
+	#database.write_data()
+	database.initialize()
+	
 	if option == 'train':
 
 		sess = tf.Session()
@@ -53,13 +54,20 @@ def run(database, option='train', learning_rate=1, num_epoch=10, batch_size=1):
 		for epoch in range(num_epoch):
 			print("EPOCH:", epoch)
 			print(database.size('train'))
-			num_batches = database.size('train') // batch_size - 2
+			num_batches = database.size('train') // batch_size
 			print(database.size('train') // batch_size)
 			for idx in range(num_batches):
 
         # Code block for getting data: assume 4-D tensor, tf.uint8, images of the same size, ground_images of the same size
 				#chunk_id = (idx*batch_size,(idx+1)*batch_size)
-				batch_images, batch_ground_images = database['train',idx*batch_size:(idx+1)*batch_size] # Will implement after Yufei finishes data processing
-				train(batch_images, batch_ground_images, model, optimizer, loss, epoch, sess)
+
+				batch_images, batch_ground_images = database['train',idx*batch_size:(idx+1)*batch_size] # Will implement after Yufei finishes data processing	
+				try:
+					train(batch_images, batch_ground_images, model, optimizer, loss, epoch, sess)
+				except:
+					print([idx*batch_size,(idx+1)*batch_size])
+					print(batch_images.shape)
+					print(batch_ground_images.shape)	
+					raise Exception('break')
 	else:
 		pass

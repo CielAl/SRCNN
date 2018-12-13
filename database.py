@@ -83,7 +83,8 @@ class database(object):
 	def img_label_pair(self,file):
 		img = cv2.imread(file,cv2.COLOR_BGR2RGB)
 		img_down = cv2.resize(img,(0,0),fx=self.resize,fy=self.resize, interpolation=self.interp)
-		img_down = cv2.resize(img_down,(0,0),fx=1/self.resize,fy=1/self.resize,interpolation=self.interp)
+		#the shape is (y,x) while cv2.resize requires (x,y)
+		img_down = cv2.resize(img_down,(img.shape[1],img.shape[0]),interpolation=self.interp)
 		return img,img_down
 
 	def generate_patch(self,image):
@@ -99,7 +100,7 @@ class database(object):
 	# Tutorial from  https://github.com/jvanvugt/pytorch-unet
 	def write_data(self):
 		h5arrays = {}
-		#debug = {}
+		debug = {}
 		filters=tables.Filters(complevel= 5)
 		types = self.types
 		#for each phase create a pytable
@@ -134,13 +135,26 @@ class database(object):
 				patches = {}
 				patches[types[0]] = self.generate_patch(img_down)
 				patches[types[1]] = self.generate_patch(img_truth)
+				if patches[types[0]].shape[0]!= patches[types[1]].shape[0]:
+					print(patches[types[0]].shape)
+					print(patches[types[1]].shape)
+					raise Exception(file)
 				for type in types:
 					h5arrays[type].append(patches[type])
+					debug[type] = debug.get(type,0)+patches[type].shape[0]
 
 			h5arrays["filename"].append([file for x in range(patches[types[0]].shape[0])])
 			for k,v in pytable.items():
 				v.close()
+		return debug
+	def is_instantiated(self,phase):
+		file_path = self.generate_tablename(phase)[0]
+		return os.path.exists(file_path)
 	
+	def initialize(self):
+		if (not self.is_instantiated('train')) or (not self.is_instantiated('val')):
+			self.write_data()
+			
 	'''
 		Slice the chunk of patches out of the database.
 		Precondition: Existence of pytable file. Does not require to call "write_data" as long as pytables exist
@@ -160,3 +174,6 @@ class database(object):
 		with tables.open_file(self.generate_tablename(phase)[0],'r') as pytable:
 			return pytable.root.img.shape[0]
 	
+	def peek(self,phase):
+		with tables.open_file(self.generate_tablename(phase)[0],'r') as pytable:
+			return pytable.root.img.shape,pytable.root.label.shape
