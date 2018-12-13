@@ -155,3 +155,8 @@ class database(object):
 			image = pytable.root.img[index,]
 			label = pytable.root.label[index,]
 		return image,label
+
+	def size(self,phase):
+		with tables.open_file(self.generate_tablename(phase)[0],'r') as pytable:
+			return pytable.root.img.shape[0]
+	
