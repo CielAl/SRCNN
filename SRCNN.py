@@ -52,7 +52,9 @@ def run(database, option='train', learning_rate=1, num_epoch=10, batch_size=1):
 
 		for epoch in range(num_epoch):
 			print("EPOCH:", epoch)
-			num_batches = 10 #len(images) // batch_size
+			print(database.size('train'))
+			num_batches = database.size('train') // batch_size - 2
+			print(database.size('train') // batch_size)
 			for idx in range(num_batches):
 
         # Code block for getting data: assume 4-D tensor, tf.uint8, images of the same size, ground_images of the same size
