@@ -6,11 +6,12 @@ def build_model(image_size, ground_image_size, num_channels, f1=9,n1=64,n2=32,f3
 
     images = tf.placeholder(tf.float32, [None, image_size, image_size, num_channels], name='images')
     ground_images = tf.placeholder(tf.float32, [None, ground_image_size, ground_image_size, num_channels], name='ground_images')
-
+    initializer = tf.contrib.layers.xavier_initializer()
+	
     weights = {
-      'W1': tf.Variable(tf.random_normal([f1, f1, num_channels, n1], stddev=1e-3), name='W1'),
-      'W2': tf.Variable(tf.random_normal([num_channels, num_channels, n1, n2], stddev=1e-3), name='W2'),
-      'W3': tf.Variable(tf.random_normal([f3, f3, n2, num_channels], stddev=1e-3), name='W3')
+      'W1': tf.Variable(initializer([f1, f1, num_channels, n1]), name='W1'),
+      'W2': tf.Variable(initializer([num_channels, num_channels, n1, n2]), name='W2'),
+      'W3': tf.Variable(initializer([f3, f3, n2, num_channels]), name='W3')
     }
 
     biases = {
