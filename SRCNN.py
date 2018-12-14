@@ -51,7 +51,8 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 
 		optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
 
-		tf.initialize_all_variables().run(session=sess)
+		#tf.initialize_all_variables().run(session=sess)
+		sess.run(tf.global_variables_initializer())
 
 		step = 0
 
