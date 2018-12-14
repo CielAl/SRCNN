@@ -63,8 +63,8 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 				#chunk_id = (idx*batch_size,(idx+1)*batch_size)
 				step += 1
 				batch_images, batch_ground_images = database['train',idx*batch_size:(idx+1)*batch_size] # Will implement after Yufei finishes data processing
-				batch_images = tf.convert_to_tensor(batch_images,dtype=tf.float32)
-				batch_ground_images = tf.convert_to_tensor(batch_ground_images,dtype=tf.float32)
+				#batch_images = tf.convert_to_tensor(batch_images,dtype=tf.float32)
+				#batch_ground_images = tf.convert_to_tensor(batch_ground_images,dtype=tf.float32)
 				try:
 					train(batch_images, batch_ground_images, model, optimizer, loss, step, sess)
 				except:
