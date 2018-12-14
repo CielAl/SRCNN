@@ -12,6 +12,7 @@ import sklearn.feature_extraction.image
 from sklearn.feature_extraction.image import extract_patches
 from tqdm import tqdm
 import tables
+import numpy as np
 
 '''	Note: define it with a main and run in command line makes it difficult to debug and somehow redundant to parse the arguments.
 	Since we are running the demo in a pynotebook as requested by Andrew, we can simply make this file a module.
@@ -66,6 +67,8 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 				batch_images, batch_ground_images = database['train',idx*batch_size:(idx+1)*batch_size] # Will implement after Yufei finishes data processing
 				#batch_images = tf.convert_to_tensor(batch_images,dtype=tf.float32)
 				#batch_ground_images = tf.convert_to_tensor(batch_ground_images,dtype=tf.float32)
+				batch_images = batch_images.astype(np.float32)/255
+				batch_ground_images = batch_ground_images.astype(np.float32)/255
 				try:
 					loss_sum += train(batch_images, batch_ground_images, model, optimizer, loss, step, sess)
 				except:
