@@ -10,6 +10,7 @@ from database import database
 from matplotlib import pyplot as plt
 import sklearn.feature_extraction.image
 from sklearn.feature_extraction.image import extract_patches
+from tqdm import tqdm
 import tables
 
 '''	Note: define it with a main and run in command line makes it difficult to debug and somehow redundant to parse the arguments.
@@ -18,7 +19,7 @@ import tables
 	import "run" into the notebook, passing database as the input arg.
 
 '''
-def run(database, option='train', learning_rate=1, num_epoch=10, batch_size=1):
+def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1):
     # if len(sys.argv) != 11:
     #     raise Exception("Inappropriate number of arguments. Require 9.")
     # training = int(sys.argv[1])
@@ -62,6 +63,8 @@ def run(database, option='train', learning_rate=1, num_epoch=10, batch_size=1):
 				#chunk_id = (idx*batch_size,(idx+1)*batch_size)
 				step += 1
 				batch_images, batch_ground_images = database['train',idx*batch_size:(idx+1)*batch_size] # Will implement after Yufei finishes data processing
+				batch_images = tf.convert_to_tensor(batch_images,dtype=tf.float32)
+				batch_ground_images = tf.convert_to_tensor(batch_ground_images,dtype=tf.float32)
 				try:
 					train(batch_images, batch_ground_images, model, optimizer, loss, step, sess)
 				except:
