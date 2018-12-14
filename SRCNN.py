@@ -55,10 +55,11 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 		step = 0
 
 		for epoch in range(num_epoch):
-			print("EPOCH:", epoch)
+			
 
 			num_batches = database.size('train') // batch_size
-			for idx in range(num_batches):
+			loss_sum = 0
+			for idx in tqdm(range(num_batches)):
         # Code block for getting data: assume 4-D tensor, tf.uint8, images of the same size, ground_images of the same size
 				#chunk_id = (idx*batch_size,(idx+1)*batch_size)
 				step += 1
@@ -66,12 +67,14 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 				#batch_images = tf.convert_to_tensor(batch_images,dtype=tf.float32)
 				#batch_ground_images = tf.convert_to_tensor(batch_ground_images,dtype=tf.float32)
 				try:
-					train(batch_images, batch_ground_images, model, optimizer, loss, step, sess)
+					loss_sum += train(batch_images, batch_ground_images, model, optimizer, loss, step, sess)
 				except:
 					print([idx*batch_size,(idx+1)*batch_size])
 					print(batch_images.shape)
 					print(batch_ground_images.shape)	
 					raise Exception('break')
+			
+			print("EPOCH:", epoch,"Avg Loss:",loss_sum/num_batches)
 
 	else:
 		pass
