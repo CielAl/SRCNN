@@ -16,4 +16,5 @@ def train(images, ground_images, model, optimizer, loss, step, sess):
         saver.save(sess, 'saved_model/model.ckpt', global_step=step)
         f = open('saved_model/log.txt','a')
         f.write('Step: %f.Loss = %f\n' %(step, loss_val))
+
     return loss_val
