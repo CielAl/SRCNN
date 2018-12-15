@@ -20,7 +20,7 @@ import numpy as np
 	import "run" into the notebook, passing database as the input arg.
 
 '''
-def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1):
+def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1, saved_data_file_name=None):
 	'''
 		Lets'define the inputs here
 	'''
@@ -46,7 +46,7 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 
 			num_batches = database.size('train') // batch_size
 			loss_sum = 0
-			
+
 			for idx in tqdm(range(num_batches)):
 				step += 1
 				batch_images, batch_ground_images = database['train',idx*batch_size:(idx+1)*batch_size]
@@ -63,4 +63,15 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 			print("EPOCH:", epoch,"Avg Loss:",loss_sum/num_batches)
 
 	else:
-		pass
+
+		sess = tf.Session()
+
+		saver = tf.train.import_meta_graph('saved_model/' + saved_data_file_name)
+
+		saver.restore(sess,tf.train.latest_checkpoint('saved_model'))
+
+		graph = tf.get_default_graph()
+
+		input_images = graph.get_tensor_by_name("images:0")
+
+		cnn = graph.get_tensor_by_name("cnn:0")

@@ -22,7 +22,7 @@ def build_model(image_size, ground_image_size, num_channels, f1=9,n1=64,n2=32,f3
 
     conv_layer1 = tf.nn.relu(tf.nn.conv2d(images, weights['W1'], strides=[1,1,1,1], padding='SAME') + biases['B1'])
     conv_layer2 = tf.nn.relu(tf.nn.conv2d(conv_layer1, weights['W2'], strides=[1,1,1,1], padding='SAME') + biases['B2'])
-    conv_layer3 = tf.nn.conv2d(conv_layer2, weights['W3'], strides=[1,1,1,1], padding='SAME') + biases['B3']
+    conv_layer3 = tf.nn.conv2d(conv_layer2, weights['W3'], strides=[1,1,1,1], padding='SAME', name='cnn') + biases['B3']
 
     saver = tf.train.Saver(max_to_keep=5)
 
