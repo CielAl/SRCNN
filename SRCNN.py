@@ -22,7 +22,7 @@ from testing import test
 	import "run" into the notebook, passing database as the input arg.
 
 '''
-def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1, saved_data_file_name=None):
+def run(database, option='train', learning_rate_start = -2,learning_rate_end = -2.5, num_epoch=10, batch_size=1, saved_data_file_name=None):
 	'''
 		Lets'define the inputs here
 	'''
@@ -39,15 +39,17 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
         # MSE loss function
 		loss = tf.reduce_mean(tf.square(model['ground_images'] - model['cnn']))
 
-		optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
+		
 
 		sess.run(tf.global_variables_initializer())
 
 		step = 0
 		all_train_psnr = []
 		all_test_psnr = []
+		learning_rate = np.logspace(learning_rate_start,learning_rate_end,num_epoch)
 		for epoch in range(num_epoch):
-
+			
+			optimizer = tf.train.GradientDescentOptimizer(learning_rate[epoch]).minimize(loss)
 			num_batches = database.size('train') // batch_size
 			loss_sum = 0
 
