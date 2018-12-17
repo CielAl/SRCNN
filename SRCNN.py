@@ -14,6 +14,8 @@ from tqdm import tqdm
 import tables
 import numpy as np
 
+from testing import test
+
 '''	Note: define it with a main and run in command line makes it difficult to debug and somehow redundant to parse the arguments.
 	Since we are running the demo in a pynotebook as requested by Andrew, we can simply make this file a module.
 	A mockup notebook on how to use database is provided in HDF5_example.ipynb. Simply instantiate the database and
@@ -55,12 +57,12 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 				try:
 					loss_sum += train(batch_images, batch_ground_images, model, optimizer, loss, step, sess)
 				except:
-					print([idx*batch_size,(idx+1)*batch_size])
-					print(batch_images.shape)
-					print(batch_ground_images.shape)
+					#print([idx*batch_size,(idx+1)*batch_size])
+					#print(batch_images.shape)
+					#print(batch_ground_images.shape)
 					raise Exception('break')
-
-			print("EPOCH:", epoch,"Avg Loss:",loss_sum/num_batches)
+			avg_train_mse = loss_sum/num_batches
+			print("EPOCH:", epoch,"Avg Train Loss - :",10*np.log10(1/avg_train_mse)," db")
 
 	else:
 
