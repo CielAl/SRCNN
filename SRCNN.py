@@ -28,7 +28,8 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 	'''
 	print("Preparing data...")
 	database.initialize()
-
+	best_test_psnr = 0
+	#best_model = {}
 	if option == 'train':
 
 		sess = tf.Session()
@@ -43,7 +44,8 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 		sess.run(tf.global_variables_initializer())
 
 		step = 0
-
+		all_train_psnr = []
+		all_test_psnr = []
 		for epoch in range(num_epoch):
 
 			num_batches = database.size('train') // batch_size
@@ -62,8 +64,21 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 					#print(batch_ground_images.shape)
 					raise Exception('break')
 			avg_train_mse = loss_sum/num_batches
-			print("EPOCH:", epoch,"Avg Train Objective - :",10*np.log10(1/avg_train_mse)," db")
-
+			val_images, val_ground_images = database['val',1:]
+			val_images = val_images.astype(np.float32)/255
+			val_ground_images = val_ground_images.astype(np.float32)/255
+			test_loss_mse = test(val_images, val_ground_images, model, sess,loss)
+			
+			train_psnr = 10*np.log10(1/avg_train_mse)
+			test_psnr = 10*np.log10(1/test_loss_mse)
+			print("EPOCH:", epoch,"Avg Train Objective(PSNR) - :",train_psnr," db","Test Objective(PSNR):",test_psnr,"db")
+			if test_psnr> best_test_psnr:
+				best_test_psnr = test_psnr
+				model['saver'].save(sess, 'saved_model/best_model_by_epoch', global_step=step)
+			
+			all_train_psnr.append(train_psnr)
+			all_test_psnr.append(test_psnr)
+			
 	else:
 
 		sess = tf.Session()
@@ -77,3 +92,4 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 		input_images = graph.get_tensor_by_name("images:0")
 
 		cnn = graph.get_tensor_by_name("cnn:0")
+	return best_test_psnr,all_train_psnr,all_test_psnr

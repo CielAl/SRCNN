@@ -39,7 +39,7 @@ class database(object):
 				stride_size: overlapping of patches.
 			Optional:
 				pattern: wildcard pattern of the images. Default is *.jpg
-				interp: the interpolation method, default is PIL.IMAGE.BICUBIC
+				interp: the interpolation method, default is PIL.IMAGE.NONE
 				resize: the factor of resize the processing, which is 1/downsample_factor.
 				dtype:  data type to be stored in the pytable. Default: UInt8Atom
 				test_ratio: ratio of the dataset as test. Default: 0.1
@@ -57,7 +57,7 @@ class database(object):
 		
 		
 		self.pattern = kwargs.get('pattern','*.jpg')
-		self.interp = kwargs.get('interp',PIL.Image.BICUBIC)
+		self.interp = kwargs.get('interp',PIL.Image.NONE)
 		self.resize = kwargs.get('resize',0.5)
 		self.dtype =  kwargs.get('dtype',tables.UInt8Atom())
 		self.test_ratio = kwargs.get('test_ratio',0.1)
