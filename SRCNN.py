@@ -62,7 +62,7 @@ def run(database, option='train', learning_rate=1e-4, num_epoch=10, batch_size=1
 					#print(batch_ground_images.shape)
 					raise Exception('break')
 			avg_train_mse = loss_sum/num_batches
-			print("EPOCH:", epoch,"Avg Train Loss - :",10*np.log10(1/avg_train_mse)," db")
+			print("EPOCH:", epoch,"Avg Train Objective - :",10*np.log10(1/avg_train_mse)," db")
 
 	else:
 
